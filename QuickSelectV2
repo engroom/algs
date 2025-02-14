@@ -1,0 +1,69 @@
+import java.util.concurrent.ThreadLocalRandom;
+
+/**
+ * @author Gergely Puskas
+ * @since 2025-02-14
+ * gergely.puskas0903@gmail.com
+ */
+public class QuickSelectV2 {
+
+    public static Comparable<?> select(Comparable<?>[] elements, int k) {
+        if (k < 0) {
+            throw new IllegalArgumentException(k + " must be zero or larger");
+        }
+        if (elements == null || elements.length < 1 || elements.length < k) {
+            throw new IllegalArgumentException("at least " + k + " elements is required");
+        }
+
+        int low = 0;
+        int high = elements.length - 1;
+        int[] p = new int[2];
+        while (low < high) {
+            partition(elements, low, high, p);
+            int lt = p[0];
+            int gt = p[1];
+            if (gt < k) {
+                low = gt + 1;
+            } else if (k < lt) {
+                high = lt - 1;
+            } else {
+                break;
+            }
+        }
+        return elements[k];
+    }
+
+    private static void partition(Comparable[] elements, int low, int high, int[] p) {
+        if (high <= low) {
+            p[0] = low;
+            p[1] = low;
+            return;
+        }
+
+        int vIdx = low + ThreadLocalRandom.current().nextInt(high - low + 1);
+        Comparable<?> v = elements[vIdx];
+        int i = low;
+        int lt = low;
+        int gt = high;
+        while (i <= gt) {
+            int comp = elements[i].compareTo(v);
+            if (comp < 0) {
+                exch(elements, lt++, i++);
+            } else if (0 < comp) {
+                exch(elements, gt--, i);
+            } else {
+                i++;
+            }
+        }
+        p[0] = lt;
+        p[1] = gt;
+    }
+
+    private static void exch(Comparable<?>[] elements, int i, int j) {
+        Comparable<?> tmp = elements[i];
+        elements[i] = elements[j];
+        elements[j] = tmp;
+    }
+
+
+}
