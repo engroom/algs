@@ -1,18 +1,28 @@
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * @author Gergely Puskas
- * @since 2025-02-14
+ * Gergely Puskas
  * gergely.puskas0903@gmail.com
+ * QuickSelectV2 class to find the k-th smallest element in an array using the QuickSelect algorithm.
  */
 public class QuickSelectV2 {
 
-    public static Comparable<?> select(Comparable<?>[] elements, int k) {
+    /**
+     * Selects the k-th smallest element from the given array.
+     *
+     * @param <T>      the type parameter that extends Comparable
+     * @param elements the array of elements
+     * @param k        the index of the k-th smallest element to find
+     * @return the k-th smallest element
+     * @throws IllegalArgumentException if k is less than 0 or greater than or equal to the length of the array
+     */
+    public static <T extends Comparable<? super T>> T select(T[] elements, int k) {
         if (k < 0) {
             throw new IllegalArgumentException(k + " must be zero or larger");
         }
-        if (elements == null || elements.length < 1 || elements.length < k) {
-            throw new IllegalArgumentException("at least " + k + " elements is required");
+        if (elements == null || elements.length < 1 || elements.length <= k) {
+            throw new IllegalArgumentException("at least " + (k + 1) + " elements are required");
         }
 
         int low = 0;
@@ -27,21 +37,32 @@ public class QuickSelectV2 {
             } else if (k < lt) {
                 high = lt - 1;
             } else {
-                break;
+                return elements[k];
             }
         }
         return elements[k];
     }
 
-    private static void partition(Comparable[] elements, int low, int high, int[] p) {
+    /**
+     * Partitions the array into three parts: less than, equal to, and greater than the pivot element.
+     *
+     * @param <T>      the type parameter that extends Comparable
+     * @param elements the array of elements
+     * @param low      the lower bound of the partition
+     * @param high     the upper bound of the partition
+     * @param p        the array to store the partition indices
+     */
+    private static <T extends Comparable<? super T>> void partition(T[] elements, int low, int high, int[] p) {
         if (high <= low) {
             p[0] = low;
             p[1] = low;
             return;
         }
 
-        int vIdx = low + ThreadLocalRandom.current().nextInt(high - low + 1);
-        Comparable<?> v = elements[vIdx];
+        // TBD if (high - low <= 7)
+
+        int vIdx = pivotIdx(elements, low, high);
+        T v = elements[vIdx];
         int i = low;
         int lt = low;
         int gt = high;
@@ -49,7 +70,7 @@ public class QuickSelectV2 {
             int comp = elements[i].compareTo(v);
             if (comp < 0) {
                 exch(elements, lt++, i++);
-            } else if (0 < comp) {
+            } else if (comp > 0) {
                 exch(elements, gt--, i);
             } else {
                 i++;
@@ -59,11 +80,32 @@ public class QuickSelectV2 {
         p[1] = gt;
     }
 
-    private static void exch(Comparable<?>[] elements, int i, int j) {
-        Comparable<?> tmp = elements[i];
+    private static <T extends Comparable<? super T>>  int pivotIdx(T[] elements, int low, int high) {
+        // Median 3
+        int mid = (low + high) / 2;
+        if (elements[mid].compareTo(elements[low]) < 0) {
+            exch(elements, low, mid);
+        }
+        if (elements[high].compareTo(elements[low]) < 0) {
+            exch(elements, low, high);
+        }
+        if (elements[high].compareTo(elements[mid]) < 0) {
+            exch(elements, mid, high);
+        }
+        // or  return low + ThreadLocalRandom.current().nextInt(high - low + 1);
+        return mid;
+    }
+    /**
+     * Exchanges the elements at the given indices in the array.
+     *
+     * @param <T>      the type parameter that extends Comparable
+     * @param elements the array of elements
+     * @param i        the index of the first element
+     * @param j        the index of the second element
+     */
+    private static <T extends Comparable<? super T>> void exch(T[] elements, int i, int j) {
+        T tmp = elements[i];
         elements[i] = elements[j];
         elements[j] = tmp;
     }
-
-
 }
